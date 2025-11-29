@@ -1,0 +1,68 @@
+---
+import { ArrowUpRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import type { GitHubRepo } from "@/lib/github";
+
+const { id, name, description, html_url, homepage, topics } =
+  Astro.props as GitHubRepo;
+
+// Format text
+const formatText = (text: string) =>
+  text.replace(/(^\w|-\w)/g, (match) => match.replace("-", " ").toUpperCase());
+---
+
+<a
+  href={homepage || html_url}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="group"
+>
+  <Card
+    className="mb-6 shadow-none border-none bg-transparent lg:group-hover:shadow-sm lg:group-hover:border lg:group-hover:bg-card"
+  >
+    <CardHeader>
+      <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg">
+        <img
+          src={`/projects/${name}.png`}
+          alt={`Photo by ${formatText(name)}`}
+          class="h-full w-full rounded-lg object-cover"
+        />
+      </AspectRatio>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <CardTitle className="flex gap-2 items-center group-hover:text-primary">
+        {formatText(name)}
+        <ArrowUpRight
+          strokeWidth={3}
+          className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+        />
+      </CardTitle>
+      <CardDescription
+        className="transition-colors group-hover:text-foreground/80"
+        >{description || "No description provided."}</CardDescription
+      >
+    </CardContent>
+    {
+      topics.length ? (
+        <CardFooter>
+          <div class="flex gap-2 flex-wrap">
+            {topics.map((topic) => (
+              <Badge className="bg-primary/10 text-primary px-3 py-1 rounded-full">
+                {formatText(topic)}
+              </Badge>
+            ))}
+          </div>
+        </CardFooter>
+      ) : null
+    }
+  </Card>
+</a>
