@@ -1,5 +1,6 @@
 ---
-import mrearsbigLogo from "../assets/mrearsbig.svg";
+import profileWhite from "../assets/white.png";
+import profileBlack from "../assets/black.png";
 import { UserRound, FolderClosed, Briefcase } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,42 +16,46 @@ import { Button } from "./ui/button";
 <div
   class="min-h-screen w-full relative bg-background lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-[48%] lg:flex-col lg:justify-between"
 >
-  {/* Soft Yellow Glow */}
-  <div
-    class="absolute inset-0 z-0 lg:hidden"
-    style={{
-      backgroundImage: `
-        radial-gradient(circle at center, #FFB300 0%, transparent 70%)
-      `,
-      opacity: 0.6,
-      mixBlendMode: "multiply",
-    }}
-  >
+  {/* Profile Image - Mobile Only - Full Screen */}
+  <div class="absolute inset-0 z-0 lg:hidden overflow-hidden">
+    {/* Image for light mode */}
+    <img
+      src={profileWhite.src}
+      alt="Alexander Viafara Profile"
+      class="w-full h-full object-cover dark:hidden"
+      style={{
+        filter: "brightness(0.9) contrast(1.1) sepia(0.15) saturate(1.2)",
+        mixBlendMode: "multiply",
+      }}
+    />
+    {/* Image for dark mode */}
+    <img
+      src={profileBlack.src}
+      alt="Alexander Viafara Profile"
+      class="w-full h-full object-cover hidden dark:block"
+      style={{
+        filter:
+          "brightness(0.75) contrast(1.05) sepia(0.3) hue-rotate(10deg) saturate(1.4)",
+        mixBlendMode: "multiply",
+      }}
+    />
+    {/* Gradient overlay - fades image to background color at bottom */}
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-background to-100%"
+    >
+    </div>
   </div>
+
   {/* Your Content/Components */}
   <header
-    class="flex h-screen flex-col items-center justify-around px-6 lg:items-start lg:justify-between lg:py-20"
+    class="relative z-10 flex h-screen flex-col items-start justify-end px-6 pb-12 lg:justify-between lg:py-20"
   >
-    {/* Logo */}
-    <div class="lg:hidden">
-      <a href="/"
-        ><img
-          src={mrearsbigLogo.src}
-          alt="Mrearsbig Homepage"
-          width="117"
-          height="32"
-        /></a
-      >
-    </div>
-
     {/* Personal and Navigation */}
-    <div class="flex flex-col gap-16">
+    <div class="flex flex-col gap-16 mb-8">
       {/* Personal */}
-      <section
-        class="flex flex-col items-center text-center lg:items-start lg:text-start lg:pt-6"
-      >
+      <section class="flex flex-col items-start text-start lg:pt-6">
         <hgroup class="flex flex-col gap-2 mb-3">
-          <h1 class="text-5xl font-bold tracking-tight">
+          <h1 class="text-4xl font-bold tracking-tight">
             <a href="/">Alexander Viafara</a>
           </h1>
           <h2 class="text-2xl font-medium tracking-tight">Systems Engineer</h2>
@@ -88,7 +93,7 @@ import { Button } from "./ui/button";
       </nav>
     </div>
 
-    {/* Social Media Icons and Theme Toggle */}
+    {/* Social Media Icons */}
     <div class="flex items-center gap-6">
       <nav aria-label="Redes sociales">
         <ul class="flex gap-4">
