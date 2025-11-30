@@ -18,7 +18,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const ACTIVE_CLASSES = ["bg-accent", "text-accent-foreground"] as const;
   const INACTIVE_CLASS = "text-muted-foreground";
 
+  let isScrolling = false;
+  let currentActiveId: string | null = null;
+
   const setActiveButton = (id: string) => {
+    if (currentActiveId === id) return; // Avoid unnecessary updates
+    currentActiveId = id;
+
     navButtons.forEach((button) => {
       const parent = button.parentElement as HTMLAnchorElement | null;
       if (!parent) return;
@@ -34,7 +40,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Attach click handlers (using parent anchor for default prevention & scroll control)
+  // Find the currently visible section based on scroll position
+  const getCurrentSection = (): string | null => {
+    const scrollPosition = window.scrollY + window.innerHeight * 0.3;
+
+    // Iterate sections in reverse to find the last one that's above the scroll position
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const section = sections[i];
+      if (section.offsetTop <= scrollPosition) {
+        return section.id;
+      }
+    }
+
+    // Default to first section if at the top
+    return sections[0]?.id || null;
+  };
+
+  // Handle scroll to update active section
+  const handleScroll = () => {
+    if (isScrolling) return; // Don't update while programmatic scrolling
+
+    const currentSection = getCurrentSection();
+    if (currentSection) {
+      setActiveButton(currentSection);
+    }
+  };
+
+  // Attach click handlers
   navButtons.forEach((button) => {
     const anchor = button.parentElement as HTMLAnchorElement | null;
     if (!anchor) return;
@@ -46,13 +78,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const targetElement = document.querySelector<HTMLElement>(targetId);
       if (!targetElement) return;
 
-      // Scroll behavior: switch to auto if user prefers reduced motion
+      // Update active button immediately
+      const sectionId = targetId.replace("#", "");
+      setActiveButton(sectionId);
+
+      // Prevent scroll handler from overriding during smooth scroll
+      isScrolling = true;
+
+      // Scroll to element
       targetElement.scrollIntoView({
         behavior: prefersReducedMotion ? "auto" : "smooth",
         block: "start",
       });
 
-      // Accessibility: ensure element can receive focus and focus it without jumping
+      // Update URL hash
+      history.pushState(null, "", targetId);
+
+      // Re-enable scroll detection after animation completes
+      setTimeout(
+        () => {
+          isScrolling = false;
+        },
+        prefersReducedMotion ? 50 : 800
+      );
+
+      // Accessibility: focus management
       if (!targetElement.hasAttribute("tabindex")) {
         targetElement.setAttribute("tabindex", "-1");
       }
@@ -60,39 +110,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // IntersectionObserver configuration
-  const observerOptions: IntersectionObserverInit = {
-    root: null,
-    // Trigger when top quarter of viewport reaches the section
-    rootMargin: "0px 0px -75% 0px",
-    threshold: 0,
-  };
+  // Listen for scroll events with throttling
+  let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (scrollTimeout) return;
+      scrollTimeout = setTimeout(() => {
+        handleScroll();
+        scrollTimeout = null;
+      }, 50);
+    },
+    { passive: true }
+  );
 
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          setActiveButton(entry.target.id);
-        }
-      }
-    }, observerOptions);
+  // Handle initial hash on page load
+  const initialHash = window.location.hash;
+  if (initialHash) {
+    const targetElement = document.querySelector<HTMLElement>(initialHash);
+    if (targetElement) {
+      // Set active button based on hash
+      const sectionId = initialHash.replace("#", "");
+      setActiveButton(sectionId);
 
-    sections.forEach((section) => observer.observe(section));
+      // Scroll to the section after a brief delay to ensure DOM is ready
+      setTimeout(() => {
+        targetElement.scrollIntoView({
+          behavior: "auto",
+          block: "start",
+        });
+      }, 0);
+    }
   } else {
-    // Fallback: activate first visible section on scroll
-    const fallback = () => {
-      let active: HTMLElement | null = null;
-      for (const section of sections) {
-        const rect = section.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top < window.innerHeight * 0.25) {
-          active = section;
-          break;
-        }
-      }
-      if (active) setActiveButton(active.id);
-    };
-    // Use globalThis to avoid any potential narrowed type issues in strict TS configs
-    globalThis.addEventListener("scroll", fallback, { passive: true });
-    fallback();
+    // Initialize based on scroll position if no hash
+    handleScroll();
   }
 });

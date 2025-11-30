@@ -70,21 +70,24 @@ import { Button } from "./ui/button";
         <ul class="flex flex-col gap-4">
           <li>
             <a href="#about">
-              <Button variant="ghost">
+              <Button
+                variant="ghost"
+                className="bg-accent text-accent-foreground"
+              >
                 <UserRound /> About
               </Button>
             </a>
           </li>
           <li>
             <a href="#projects">
-              <Button variant="ghost">
+              <Button variant="ghost" className="text-muted-foreground">
                 <FolderClosed /> Projects
               </Button>
             </a>
           </li>
           <li>
             <a href="#experience">
-              <Button variant="ghost">
+              <Button variant="ghost" className="text-muted-foreground">
                 <Briefcase /> Experience
               </Button>
             </a>
